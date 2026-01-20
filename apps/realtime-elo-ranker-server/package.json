@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "NODE_ENV=development node index.js"
+    "dev": "NODE_ENV=development node index.js",
+    "simulate": "node simulate.js",
+    "dev:simulate": "node run-with-simulate.js"
   },
   "dependencies": {
     "better-sqlite3": "^8.0.0",
