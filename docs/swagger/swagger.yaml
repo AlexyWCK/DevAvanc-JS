@@ -1,0 +1,196 @@
+openapi: "3.0.0"
+info:
+  title: "Realtime ELO Ranker API"
+  description: "API documentation for the Realtime ELO Ranker"
+  version: "0.1.0"
+servers:
+  - url: "http://localhost:3000"
+    description: "Local server"
+paths:
+  # Publication des résultats d'un match
+  /api/match:
+    post:
+      summary: "Publication des résultats d'un match"
+      description: |
+        Publie les résultats d'un match pour mettre à jour le classement des joueurs.
+
+        Si le match s'est terminé par un match nul, le champ `draw` doit être `true`.
+        
+        Dans le cas d'un match nul, les champs `winner` et `loser` ne font aucune différence.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                winner:
+                  type: "string"
+                  description: "L'identifiant du gagnant du match"
+                loser:
+                  type: "string"
+                  description: "L'identifiant du perdant du match"
+                draw:
+                  type: "boolean"
+                  description: "Indique si le match s'est terminé par un match nul"
+      responses:
+        200:
+          description: "Résultats du match publiés avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResult"
+        422:
+          description: "Soit le gagnant, soit le perdant indiqué n'existe pas"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  # Création d'un joueur
+  /api/player:
+    post:
+      summary: "Création d'un joueur"
+      description: "Crée un nouveau joueur"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "L'identifiant du joueur"
+      responses:
+        200:
+          description: "Joueur créé avec succès"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        400:
+          description: "L'identifiant du joueur n'est pas valide"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        409:
+          description: "Le joueur existe déjà"
+          content:
+            application/json:
+              schema:
+                 $ref: "#/components/schemas/Error"
+  # Récupération du classement
+  /api/ranking:
+    get:
+      summary: "Récupération du classement"
+      description: "Récupère le classement des joueurs"
+      responses:
+        200:
+          description: "Classement récupéré avec succès"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Player"
+        404:
+          description: "Le classement n'est pas disponible car aucun joueur n'existe"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  # Abonnement aux mises à jour du classement 
+  /api/ranking/events:
+    get:
+      summary: "Abonnement aux mises à jour du classement"
+      description: |
+        Permet de s'abonner aux mises à jour du classement des joueurs.
+
+        Les mises à jour sont envoyées sous forme de flux de données texte.
+
+        Si une erreur survient, un objet `Error` est envoyé et le flux doit être interrompu.
+      responses:
+        200:
+          description: "Le client est abonné aux mises à jour du classement"
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/RankingUpdate"
+                  - type: object
+                    allOf:
+                      - $ref: "#/components/schemas/RankingEvent"
+                      - $ref: "#/components/schemas/Error"
+                      - type: "object"
+                        properties:
+                          type:
+                            value: "Error"
+                discriminator:
+                  propertyName: "type"
+                  mapping:
+                    "RankingUpdate": "#/components/schemas/RankingUpdate"
+                    "Error": "#/components/schemas/Error"
+components:
+  schemas:
+    Player:
+      type: "object"
+      required:
+        - id
+        - rank
+      properties:
+        id:
+          type: "string"
+          description: "L'identifiant du joueur"
+        rank:
+          type: "number"
+          description: "Le classement du joueur"
+    MatchResult:
+      type: "object"
+      required:
+        - winner
+        - loser
+      properties:
+        winner:
+          $ref: "#/components/schemas/Player"
+        loser:
+          $ref: "#/components/schemas/Player"
+    RankingEvent:
+      type: "object"
+      required:
+        - type
+      properties:
+        type:
+          type: "string"
+          description: "Le type d'événement"
+    RankingUpdate:
+      allOf:
+        - $ref: "#/components/schemas/RankingEvent"
+        - type: "object"
+          required:
+            - player
+          properties:
+            type:
+              value: "RankingUpdate"
+            player:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "L'identifiant du joueur"
+                rank:
+                  type: "number"
+                  description: "Le classement du joueur"
+    Error:
+      type: "object"
+      required:
+        - code
+      properties:
+        code:
+          type: "number"
+          description: "Code d'erreur"
+          min: 100
+          max: 599
+        message:
+          type: "string"
+          description: "Message d'erreur"

@@ -1,0 +1,21 @@
+{
+  "name": "swagger",
+  "version": "1.0.1",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "scripts": {
+    "start": "LIVERELOAD_PORT=35729 nodemon --watch swagger.yaml index.mjs"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "catalog:",
+    "swagger-ui-express": "catalog:",
+    "yamljs": "catalog:"
+  },
+  "devDependencies": {
+    "connect-livereload": "catalog:",
+    "livereload": "catalog:",
+    "nodemon": "catalog:"
+  }
+}
