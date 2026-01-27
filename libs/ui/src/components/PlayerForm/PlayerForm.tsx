@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useState } from 'react';
 
 interface PlayerFormProps {
   callback: (playerName: string) => Promise<Response>;
@@ -14,17 +14,21 @@ const PlayerForm: FC<PlayerFormProps> = (props) => {
 
   return (
     <form
-      data-testid="MatchForm"
+      data-testid="PlayerForm"
       className="flex flex-col justify-center mb-4 gap-4 p-2 border border-gray-300 rounded-md"
-      onSubmit={(evt) => {
+      onSubmit={async (evt) => {
         evt.preventDefault();
-        callback(playerName).then(res => {
+        try {
+          const res = await callback(playerName);
           if (res.ok) {
             resetForm();
           } else {
-            console.log("Error while posting player");
+            // Afficher une erreur utilisateur ici si besoin
+            console.error("Erreur lors de la création du joueur");
           }
-        });
+        } catch (err) {
+          console.error("Erreur réseau ou serveur", err);
+        }
       }}
     >
       <span className="text-xl">Nom du joueur</span>

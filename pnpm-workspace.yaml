@@ -2,10 +2,12 @@ packages:
   - apps/*
   - libs/*
   - docs/*
+
 catalog:
   '@eslint/eslintrc': ~3.3
   '@mocks-server/main': ~4.1
   '@next/env': ~15.5
+  '@tailwindcss/postcss': ~4.1
   '@testing-library/jest-dom': ~6.8.0
   '@testing-library/react': ~16.3.0
   '@types/jest': ~30.0
@@ -29,12 +31,16 @@ catalog:
   react: ~19.1
   react-dom: ~19.1
   swagger-ui-express: ~5.0
-  '@tailwindcss/postcss': ~4.1
   tailwindcss: ~4.1
   ts-jest: ~29.4
   typescript: ~5.9.2
   yamljs: ~0.3
-  
+
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
+  - better-sqlite3
+  - unrs-resolver
+
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - sharp
