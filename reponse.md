@@ -13,3 +13,7 @@ Le simulateur (sous `simulate.js` et `run-with-simulate.js`) génère automatiqu
 La vidéo de présentation montre la chaîne complète : génération automatique de matchs, réception du SSE sur le client et interface responsive.
 
 [Visionner la vidéo du match automatique](medias/video_presentation_match_automatique.mp4)
+
+Voici les tests que j'ai exécutés :
+
+![Tests](medias/tests.png)
