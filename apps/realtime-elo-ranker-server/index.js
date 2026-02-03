@@ -21,23 +21,28 @@ function broadcast(event) {
 // POST /api/player -> create player with optional rank
 app.post('/api/player', (req, res) => {
   const { id, rank } = req.body;
-  if (!id) return res.status(400).send({ code: 400, message: 'id required' });
-  const existing = getPlayer(id);
-  if (existing) return res.status(409).send({ code: 409, message: 'player already exists' });
+  if (!id || typeof id !== 'string' || id.trim() === '') {
+    return res.status(400).json({ error: 'id required and must be a non-empty string' });
+  }
+  const normalizedId = id.trim();
+  const existing = getPlayer(normalizedId);
+  if (existing) {
+    return res.status(409).json({ error: 'player already exists' });
+  }
   const initialRank = typeof rank === 'number' ? Math.round(rank) : avgRank();
-  createPlayer(id, initialRank);
-  const player = getPlayer(id);
+  createPlayer(normalizedId, initialRank);
+  const player = getPlayer(normalizedId);
   broadcast({ type: 'PlayerCreated', player });
-  res.status(200).send(player);
+  res.status(201).json(player);
 });
 
 // POST /api/match { winner, loser, draw }
 app.post('/api/match', (req, res) => {
   const { winner, loser, draw } = req.body;
-  if (!winner || !loser) return res.status(400).send({ code: 400, message: 'winner and loser required' });
+  if (!winner || !loser) return res.status(400).json({ error: 'winner and loser required' });
   const w = getPlayer(winner);
   const l = getPlayer(loser);
-  if (!w || !l) return res.status(422).send({ code: 422, message: 'player not found' });
+  if (!w || !l) return res.status(422).json({ error: 'player not found' });
 
   // results
   const resW = draw ? 0.5 : 1;
@@ -59,14 +64,14 @@ app.post('/api/match', (req, res) => {
   broadcast({ type: 'RankingUpdate', player: payload.winner });
   broadcast({ type: 'RankingUpdate', player: payload.loser });
 
-  res.status(200).send(payload);
+  res.status(200).json(payload);
 });
 
 // GET /api/ranking
 app.get('/api/ranking', (req, res) => {
   const players = listPlayers().map(p => ({ id: p.id, rank: p.rank }));
   players.sort((a,b) => b.rank - a.rank);
-  res.status(200).send(players);
+  res.status(200).json(players);
 });
 
 // GET /api/ranking/events -> SSE
@@ -84,7 +89,7 @@ app.get('/api/ranking/events', (req, res) => {
 });
 
 // Health
-app.get('/health', (req, res) => res.send({ ok: true }));
+app.get('/health', (req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
