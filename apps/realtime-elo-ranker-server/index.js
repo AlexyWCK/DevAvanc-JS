@@ -21,9 +21,9 @@ function broadcast(event) {
 // POST /api/player -> create player with optional rank
 app.post('/api/player', (req, res) => {
   const { id, rank } = req.body;
-  if (!id) return res.status(400).send({ error: 'id required' });
+  if (!id) return res.status(400).send({ code: 400, message: 'id required' });
   const existing = getPlayer(id);
-  if (existing) return res.status(200).send(existing);
+  if (existing) return res.status(409).send({ code: 409, message: 'player already exists' });
   const initialRank = typeof rank === 'number' ? Math.round(rank) : avgRank();
   createPlayer(id, initialRank);
   const player = getPlayer(id);
@@ -34,10 +34,10 @@ app.post('/api/player', (req, res) => {
 // POST /api/match { winner, loser, draw }
 app.post('/api/match', (req, res) => {
   const { winner, loser, draw } = req.body;
-  if (!winner || !loser) return res.status(400).send({ error: 'winner and loser required' });
+  if (!winner || !loser) return res.status(400).send({ code: 400, message: 'winner and loser required' });
   const w = getPlayer(winner);
   const l = getPlayer(loser);
-  if (!w || !l) return res.status(404).send({ error: 'player not found' });
+  if (!w || !l) return res.status(422).send({ code: 422, message: 'player not found' });
 
   // results
   const resW = draw ? 0.5 : 1;
