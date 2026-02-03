@@ -12,10 +12,11 @@ interface MatchFormProps {
     adversaryB: string,
     result: MatchResult
   ) => Promise<Response>;
+  onError?: (status: number) => void;
 }
 
 const MatchForm: FC<MatchFormProps> = (props) => {
-  const { callback } = props;
+  const { callback, onError } = props;
   const [adversaryA, setAdversaryA] = useState("");
   const [adversaryB, setAdversaryB] = useState("");
   const [result, setResult] = useState<MatchResult>(MatchResult.LEFT_WIN);
@@ -36,8 +37,8 @@ const MatchForm: FC<MatchFormProps> = (props) => {
           if (res.ok) {
             resetForm();
           } else {
-            // TODO: toast error
-            console.error("Error while posting match result");
+            onError?.(res.status);
+            console.error("Error while posting match result", res.status);
           }
         });
       }}

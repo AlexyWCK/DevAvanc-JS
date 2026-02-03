@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 /* CSS from libraries */
 import '@realtime-elo-ranker/libs/ui/styles';
